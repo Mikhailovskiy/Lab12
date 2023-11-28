@@ -1,0 +1,108 @@
+import json
+
+def read_json(file_path):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            data = json.load(file)
+        return data
+    except FileNotFoundError:
+        print(f"Помилка: файл {file_path} не знайдено.")
+        return None
+    except json.JSONDecodeError:
+        print(f"Помилка: не вдалося декодувати JSON у файлі {file_path}.")
+        return None
+    except Exception as e:
+        print(f"Помилка: {str(e)}")
+        return None
+
+def write_json(file_path, data):
+    try:
+        with open(file_path, 'w', encoding='utf-8') as file:
+            json.dump(data, file, ensure_ascii=False, indent=2)
+        print(f"Дані збережено у файлі {file_path}.")
+    except Exception as e:
+        print(f"Помилка: {str(e)}")
+
+def display_json(file_path):
+    data = read_json(file_path)
+    if data:
+        print(json.dumps(data, ensure_ascii=False, indent=2))
+
+def add_entry(json_data, model, cost, age):
+    json_data.append({"Model": model, "Cost": cost, "Age": age})
+
+def remove_entry(json_data, model):
+    json_data[:] = [entry for entry in json_data if entry["Model"] != model]
+
+def search_by_field(json_data, field, value):
+    return [entry for entry in json_data if entry.get(field) == value]
+
+def calculate_average_cost_above_age(json_data, threshold_age):
+    filtered_data = [entry for entry in json_data if entry["Age"] > threshold_age]
+    total_cost = sum(entry["Cost"] for entry in filtered_data)
+    count = len(filtered_data)
+
+    return total_cost / count if count else 0
+
+def main():
+    input_file_path = 'car_data.json'
+    output_file_path = 'result_data.json'
+
+    # Приклад моделей легкових автомобілів
+    car_data = [
+        {"Model": "ModelA", "Cost": 15000, "Age": 5},
+        {"Model": "ModelB", "Cost": 25000, "Age": 7},
+        {"Model": "ModelC", "Cost": 18000, "Age": 6},
+        {"Model": "ModelD", "Cost": 15000, "Age": 5},
+        {"Model": "ModelE", "Cost": 20000, "Age": 6},
+        {"Model": "ModelF", "Cost": 17000, "Age": 3},
+        {"Model": "ModelG", "Cost": 9000, "Age": 8},
+        {"Model": "ModelH", "Cost": 30000, "Age": 2},
+        {"Model": "ModelI", "Cost": 23000, "Age": 4},
+        {"Model": "ModelJ", "Cost": 5000, "Age": 10},
+       
+    ]
+
+    # Записуємо початкові дані в JSON-файл
+    write_json(input_file_path, car_data)
+
+    while True:
+        print("\n1. Вивести вміст JSON файлу")
+        print("2. Додати новий запис у JSON файл")
+        print("3. Видалити запис з JSON файлу")
+        print("4. Пошук даних за полем у JSON файлі")
+        print("5. Розрахувати середню вартість автомобілів з віком більше 6 років")
+        print("6. Зберегти результат у новому JSON файлі")
+        print("7. Вийти")
+
+        choice = input("Оберіть опцію: ")
+
+        if choice == '1':
+            display_json(input_file_path)
+        elif choice == '2':
+            model = input("Введіть модель автомобіля: ")
+            cost = float(input("Введіть вартість автомобіля: "))
+            age = int(input("Введіть вік автомобіля: "))
+            add_entry(car_data, model, cost, age)
+        elif choice == '3':
+            model_to_remove = input("Введіть модель автомобіля для видалення: ")
+            remove_entry(car_data, model_to_remove)
+        elif choice == '4':
+            search_field = input("Введіть поле для пошуку (Model, Cost, Age): ")
+            search_value = input("Введіть значення для пошуку: ")
+            result = search_by_field(car_data, search_field, search_value)
+            print("Результат пошуку:")
+            print(json.dumps(result, ensure_ascii=False, indent=2))
+        elif choice == '5':
+            threshold_age = int(input("Введіть поріг віку для розрахунку середньої вартості: "))
+            average_cost = calculate_average_cost_above_age(car_data, threshold_age)
+            print(f"Середня вартість автомобілів з віком більше {threshold_age} років: {average_cost}")
+        elif choice == '6':
+            write_json(output_file_path, car_data)
+        elif choice == '7':
+            break
+        else:
+            print("Невірний вибір. Будь ласка, спробуйте ще раз.")
+
+if __name__ == "__main__":
+    main()
